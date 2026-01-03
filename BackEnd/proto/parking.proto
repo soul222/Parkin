@@ -1,0 +1,186 @@
+syntax = "proto3";
+
+package parking;
+
+// ============================================
+// Vehicle Detection Service
+// ============================================
+service VehicleService {
+  // Streaming detections from YOLO to Server
+  rpc StreamDetections(stream VehicleDetection) returns (DetectionResponse);
+  
+  // Bidirectional streaming untuk real-time updates
+  rpc LiveMonitoring(stream MonitoringRequest) returns (stream VehicleStats);
+  
+  // Get current statistics
+  rpc GetStats(StatsRequest) returns (VehicleStats);
+  
+  // Get vehicle logs with pagination
+  rpc GetLogs(LogsRequest) returns (LogsResponse);
+}
+
+// ============================================
+// Settings Service
+// ============================================
+service SettingsService {
+  rpc GetSettings(SettingsRequest) returns (Settings);
+  rpc UpdateSettings(Settings) returns (SettingsResponse);
+  rpc StreamSettingsUpdates(SettingsRequest) returns (stream Settings);
+}
+
+// ============================================
+// Authentication Service
+// ============================================
+service AuthService {
+  rpc Login(LoginRequest) returns (AuthResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc ValidateToken(TokenRequest) returns (TokenValidation);
+}
+
+// ============================================
+// Messages
+// ============================================
+
+message VehicleDetection {
+  string vehicle_type = 1;  // "mobil" or "motor"
+  string direction = 2;     // "in" or "out"
+  int32 track_id = 3;
+  int64 timestamp = 4;
+  BoundingBox bbox = 5;
+  float confidence = 6;
+}
+
+message BoundingBox {
+  int32 x1 = 1;
+  int32 y1 = 2;
+  int32 x2 = 3;
+  int32 y2 = 4;
+}
+
+message DetectionResponse {
+  bool success = 1;
+  string message = 2;
+  VehicleStats current_stats = 3;
+}
+
+message MonitoringRequest {
+  string client_id = 1;
+  int64 timestamp = 2;
+}
+
+message VehicleStats {
+  VehicleTypeStats mobil = 1;
+  VehicleTypeStats motor = 2;
+  TotalStats total = 3;
+  int64 timestamp = 4;
+}
+
+message VehicleTypeStats {
+  int32 terisi = 1;        // NEW
+  int32 tersedia = 2;
+  int32 max_capacity = 3;
+  int32 count_in = 4;
+  int32 count_out = 5;
+  bool is_full = 6;
+}
+
+message TotalStats {
+  int32 terisi = 1;        // NEW
+  int32 tersedia = 2;
+  int32 max_capacity = 3;
+  bool is_full = 4;
+}
+
+message StatsRequest {
+  int64 timestamp = 1;
+}
+
+message LogsRequest {
+  int32 page = 1;
+  int32 limit = 2;
+  string vehicle_type = 3;  // optional filter
+  string status = 4;         // optional filter
+  int64 start_date = 5;
+  int64 end_date = 6;
+}
+
+message LogsResponse {
+  repeated VehicleLog logs = 1;
+  Pagination pagination = 2;
+}
+
+message VehicleLog {
+  string id = 1;
+  string vehicle_type = 2;
+  string status = 3;
+  int32 track_id = 4;
+  int64 created_at = 5;
+}
+
+message Pagination {
+  int32 page = 1;
+  int32 limit = 2;
+  int32 total = 3;
+  int32 total_pages = 4;
+}
+
+// Settings Messages
+message SettingsRequest {
+  string user_id = 1;
+}
+
+message Settings {
+  string id = 1;
+  int32 max_mobil = 2;
+  int32 max_motor = 3;
+  string stream_url = 4;
+  string stream_type = 5;
+  float line_position = 6;
+  int64 updated_at = 7;
+}
+
+message SettingsResponse {
+  bool success = 1;
+  string message = 2;
+  Settings settings = 3;
+}
+
+// Auth Messages
+message LoginRequest {
+  string username = 1;
+  string password = 2;
+}
+
+message AuthResponse {
+  bool success = 1;
+  string message = 2;
+  string token = 3;
+  User user = 4;
+}
+
+message User {
+  string id = 1;
+  string nama = 2;
+  string username = 3;
+  string email = 4;
+  string role = 5;
+  string status = 6;
+}
+
+message LogoutRequest {
+  string token = 1;
+}
+
+message LogoutResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message TokenRequest {
+  string token = 1;
+}
+
+message TokenValidation {
+  bool valid = 1;
+  User user = 2;
+}
