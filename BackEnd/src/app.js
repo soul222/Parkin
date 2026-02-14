@@ -18,7 +18,8 @@ import notificationRoutes from "./routes/notificationRoutes.js";
 
 // Import services
 import { initWebSocketServer } from "./services/websocketService.js";
-import { startGRPCServer } from "./services/grpcService.js";
+import { startGrpcServer } from "./grpc/server.js";
+import { broadcastToClients } from "./services/websocketService.js";
 
 // ES Module __dirname equivalent
 const __filename = fileURLToPath(import.meta.url);
@@ -123,12 +124,11 @@ server.listen(PORT, () => {
 });
 
 // Start gRPC server for YOLO client
-startGRPCServer(GRPC_PORT).then(() => {
-  console.log(`🔧 gRPC Server: localhost:${GRPC_PORT}`);
-  console.log("===========================================");
-}).catch((err) => {
+try {
+  startGrpcServer({ broadcast: broadcastToClients });
+} catch (err) {
   console.error("❌ Failed to start gRPC server:", err);
-});
+}
 
 // ============================================
 // GRACEFUL SHUTDOWN

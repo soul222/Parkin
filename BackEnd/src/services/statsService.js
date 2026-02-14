@@ -1,7 +1,7 @@
-import { supabase } from "../config/supabase.js";
+import { supabaseService } from "../config/supabase.js";
 
 export async function getVehicleStats() {
-  const { data: settings } = await supabase
+  const { data: settings } = await supabaseService
     .from("settings")
     .select("max_mobil,max_motor")
     .limit(1)
@@ -58,7 +58,7 @@ export async function getVehicleStats() {
 }
 
 async function countLogs(jenis, status) {
-  const { count } = await supabase
+  const { count } = await supabaseService
     .from("vehicle_logs")
     .select("id", { count: "exact", head: true })
     .eq("jenis_kendaraan", jenis)

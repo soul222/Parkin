@@ -174,5 +174,10 @@ class VehicleCounterGRPC:
 
 
 if __name__ == "__main__":
-    counter = VehicleCounterGRPC(grpc_server="localhost:50051")
+    # Usage: python vehicle_counter_grpc.py [grpc_server_address]
+    # Default: localhost:50051 (local dev)
+    # Production: python vehicle_counter_grpc.py <IP_EC2>:50051
+    grpc_addr = sys.argv[1] if len(sys.argv) > 1 else "localhost:50051"
+    print(f"🔗 Connecting to gRPC server: {grpc_addr}")
+    counter = VehicleCounterGRPC(grpc_server=grpc_addr)
     counter.run()

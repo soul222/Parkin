@@ -3,6 +3,12 @@ import { supabaseService } from "../config/supabase.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key";
 const clients = new Map();
+const offlineTimers = new Map(); // userId -> setTimeout handle (grace period)
+const OFFLINE_GRACE_MS = 60 * 60 * 1000; // 1 hour before marking offline
+
+// Discord webhook cooldown
+let lastDiscordNotifyAt = 0;
+const DISCORD_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
 
 export function initWebSocketServer(wss) {
   console.log("🔌 WebSocket server initialized");
@@ -27,6 +33,13 @@ export function initWebSocketServer(wss) {
           user = userData;
           console.log(`✅ Authenticated: ${user.username} (${user.role})`);
         
+          // Cancel any pending offline timer (e.g. from a page refresh)
+          if (offlineTimers.has(user.id)) {
+            clearTimeout(offlineTimers.get(user.id));
+            offlineTimers.delete(user.id);
+            console.log(`🔄 Cancelled offline timer for ${user.username} (reconnected)`);
+          }
+
           await supabaseService
              .from("users")
              .update({ status: 'online' })
@@ -72,22 +85,30 @@ export function initWebSocketServer(wss) {
       console.log(`📊 Active clients: ${clients.size}`);
 
       if (user && user.id) {
-        // Cek dulu apakah user ini punya koneksi lain yang aktif? (Misal buka 2 tab)
-        const isStillConnected = Array.from(clients.values()).some(
-          (c) => c.user?.id === user.id
-        );
+        // Use a grace period before marking offline
+        // This prevents page refreshes from briefly showing "offline"
+        const timer = setTimeout(async () => {
+          offlineTimers.delete(user.id);
+          
+          // Check if user reconnected during grace period
+          const isStillConnected = Array.from(clients.values()).some(
+            (c) => c.user?.id === user.id
+          );
 
-        if (!isStillConnected) {
+          if (!isStillConnected) {
             try {
-                await supabaseService
-                    .from("users")
-                    .update({ status: 'offline' })
-                    .eq('id', user.id);
-                console.log(`💤 User ${user.username} marked as OFFLINE`);
+              await supabaseService
+                .from("users")
+                .update({ status: 'offline' })
+                .eq('id', user.id);
+              console.log(`💤 User ${user.username} marked as OFFLINE (after grace period)`);
             } catch (err) {
-                console.error("Failed to update offline status:", err);
+              console.error("Failed to update offline status:", err);
             }
-        }
+          }
+        }, OFFLINE_GRACE_MS);
+
+        offlineTimers.set(user.id, timer);
       }
     });
 
@@ -140,6 +161,58 @@ export function broadcastToClients(message, filterFn = null) {
 
   if (sentCount > 0) {
     console.log(`📡 Broadcasted ${message.type} to ${sentCount} client(s)`);
+  }
+
+  // Auto-trigger Discord notification on parking_full
+  if (message.type === 'parking_full') {
+    sendDiscordNotification(message.message || 'Parkir sudah penuh!').catch(err => {
+      console.error('❌ Discord notify error:', err.message);
+    });
+  }
+}
+
+async function sendDiscordNotification(message) {
+  const now = Date.now();
+  if (now - lastDiscordNotifyAt < DISCORD_COOLDOWN_MS) {
+    console.log('⏳ Discord notification cooldown active, skipping');
+    return;
+  }
+
+  try {
+    const { data: settings } = await supabaseService
+      .from('settings')
+      .select('discord_webhook_url')
+      .single();
+
+    const webhookUrl = settings?.discord_webhook_url;
+    if (!webhookUrl) {
+      console.log('⚠️ No Discord webhook URL configured, skipping');
+      return;
+    }
+
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        embeds: [{
+          title: '🚨 PARKIN — Parkir Penuh!',
+          description: message,
+          color: 0xEF4444,
+          thumbnail: { url: 'https://cdn-icons-png.flaticon.com/512/2913/2913112.png' },
+          footer: { text: 'PARKIN Notification System' },
+          timestamp: new Date().toISOString()
+        }]
+      })
+    });
+
+    if (response.ok) {
+      lastDiscordNotifyAt = now;
+      console.log('✅ Discord notification sent');
+    } else {
+      console.error('❌ Discord webhook failed:', response.status);
+    }
+  } catch (error) {
+    console.error('❌ Discord notification error:', error.message);
   }
 }
 

@@ -42,6 +42,7 @@ export async function updateSettings(req, res) {
       stream_url,
       stream_type,
       line_position,
+      discord_webhook_url,
     } = req.body;
 
     if (stream_type && !["youtube", "rtsp"].includes(stream_type)) {
@@ -63,6 +64,7 @@ export async function updateSettings(req, res) {
       ...(stream_url !== undefined && { stream_url }),
       ...(stream_type && { stream_type }),
       ...(line_position && { line_position: parseFloat(line_position) }),
+      ...(discord_webhook_url !== undefined && { discord_webhook_url }),
       updated_at: new Date().toISOString(),
       updated_by: req.user.id,
     };

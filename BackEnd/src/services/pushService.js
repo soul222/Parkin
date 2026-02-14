@@ -1,5 +1,5 @@
 import webpush from "web-push";
-import { supabase } from "../config/supabase.js";
+import { supabaseService } from "../config/supabase.js";
 
 webpush.setVapidDetails(
   process.env.VAPID_SUBJECT,
@@ -15,7 +15,7 @@ export async function pushParkingFullToAll(message) {
   if (now - lastFullPushAt < COOLDOWN_MS) return;
   lastFullPushAt = now;
 
-  const { data: subs, error } = await supabase
+  const { data: subs, error } = await supabaseService
     .from("push_subscriptions")
     .select("endpoint,p256dh,auth");
 
@@ -37,7 +37,7 @@ export async function pushParkingFullToAll(message) {
     } catch (e) {
       const code = e?.statusCode;
       if (code === 404 || code === 410) {
-        await supabase.from("push_subscriptions").delete().eq("endpoint", s.endpoint);
+        await supabaseService.from("push_subscriptions").delete().eq("endpoint", s.endpoint);
       }
     }
   }

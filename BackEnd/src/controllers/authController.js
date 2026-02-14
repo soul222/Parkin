@@ -99,15 +99,35 @@ export async function register(req, res) {
 
 export async function login(req, res) {
   try {
-    const { email, password } = req.body;
+    const { username, email, password } = req.body;
 
-    // 1. Cek User (Pastikan tidak deleted)
-    const { data: user } = await supabaseService
+    // Accept either username or email for login
+    const loginField = username || email;
+    if (!loginField || !password) {
+      return res.status(400).json({ message: "Username/email and password required" });
+    }
+
+    // 1. Try finding user by username first, then by email
+    let user = null;
+    
+    const { data: byUsername } = await supabaseService
       .from("users")
       .select("*")
-      .eq("email", email)
-      .is("deleted_at", null) // Filter user aktif
+      .eq("username", loginField)
+      .is("deleted_at", null)
       .single();
+    
+    if (byUsername) {
+      user = byUsername;
+    } else {
+      const { data: byEmail } = await supabaseService
+        .from("users")
+        .select("*")
+        .eq("email", loginField)
+        .is("deleted_at", null)
+        .single();
+      user = byEmail;
+    }
 
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });

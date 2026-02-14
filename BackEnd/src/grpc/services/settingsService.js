@@ -1,12 +1,12 @@
 import grpc from "@grpc/grpc-js";
-import { supabase } from "../../config/supabase.js";
+import { supabaseService } from "../../config/supabase.js";
 
 const watchers = new Map(); // watcherId -> call
 
 export const settingsService = {
   GetSettings: async (call, callback) => {
     try {
-      const { data: s, error } = await supabase
+      const { data: s, error } = await supabaseService
         .from("settings")
         .select("*")
         .limit(1)
@@ -27,7 +27,7 @@ export const settingsService = {
       // ambil id kalau kosong
       let settingsId = req.id;
       if (!settingsId) {
-        const { data: row, error } = await supabase
+        const { data: row, error } = await supabaseService
           .from("settings")
           .select("id")
           .limit(1)
@@ -47,7 +47,7 @@ export const settingsService = {
       if (typeof req.stream_type === "string" && req.stream_type) updateData.stream_type = req.stream_type;
       if (typeof req.line_position === "number" && req.line_position > 0) updateData.line_position = req.line_position;
 
-      const { data: updated, error } = await supabase
+      const { data: updated, error } = await supabaseService
         .from("settings")
         .update(updateData)
         .eq("id", settingsId)
@@ -76,7 +76,7 @@ export const settingsService = {
 
     // kirim initial settings
     try {
-      const { data: s, error } = await supabase
+      const { data: s, error } = await supabaseService
         .from("settings")
         .select("*")
         .limit(1)

@@ -1,4 +1,4 @@
-import { supabase } from "../../config/supabase.js";
+import { supabaseService } from "../../config/supabase.js";
 import { getVehicleStats } from "../../services/statsService.js";
 import { pushParkingFullToAll } from "../../services/pushService.js";
 
@@ -9,7 +9,7 @@ export function makeVehicleService(wsBroadcaster) {
       call.on("data", async (detection) => {
         try {
           // simpan log
-          const { error } = await supabase.from("vehicle_logs").insert([
+          const { error } = await supabaseService.from("vehicle_logs").insert([
             {
               jenis_kendaraan: detection.vehicle_type,
               status: detection.direction,
@@ -31,6 +31,12 @@ export function makeVehicleService(wsBroadcaster) {
               track_id: detection.track_id,
               created_at: new Date().toISOString(),
             },
+          });
+
+          // Broadcast updated stats so dashboard updates in real-time
+          wsBroadcaster.broadcast({
+            type: "vehicle_stats",
+            data: stats,
           });
 
           // Level 1: in-app alert message

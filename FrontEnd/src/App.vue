@@ -1,7 +1,8 @@
 <template>
+  <InstallPrompt />
   <router-view />
 </template>
 
 <script setup>
-// App entry point - no logic needed, just router-view
+import InstallPrompt from './components/InstallPrompt.vue'
 </script>

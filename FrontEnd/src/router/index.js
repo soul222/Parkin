@@ -19,6 +19,11 @@ const routes = [
     meta: { requiresGuest: true }
   },
   {
+    path: '/offline',
+    name: 'Offline',
+    component: () => import('../views/OfflineView.vue')
+  },
+  {
     path: '/dashboard',
     component: () => import('../views/DashboardLayout.vue'),
     meta: { requiresAuth: true },
@@ -72,11 +77,13 @@ router.beforeEach(async (to, from, next) => {
       return
     }
     
-    // Validate token is still valid
-    const isValid = await auth.validateToken()
-    if (!isValid) {
-      next('/login')
-      return
+    // Skip token validation when offline — trust cached auth state
+    if (navigator.onLine) {
+      const isValid = await auth.validateToken()
+      if (!isValid) {
+        next('/login')
+        return
+      }
     }
   }
   

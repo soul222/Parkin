@@ -1,123 +1,122 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-5">
     <div class="card">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
         <div>
-          <h2 class="text-2xl font-bold">User Management</h2>
-          <p class="text-dark-muted text-sm">
+          <h2 class="text-xl font-bold" style="color: var(--surface-text);">User Management</h2>
+          <p class="text-xs mt-0.5" style="color: var(--surface-muted);">
             {{ isAdmin ? 'Admin: Full CRUD • Security: Read Only' : 'Read Only' }}
           </p>
         </div>
         
         <div class="flex gap-2">
-          <button @click="loadUsers" class="btn btn-ghost">
-            🔄 Reload
-          </button>
-          <button 
-            v-if="isAdmin" 
-            @click="openCreateForm" 
-            class="btn btn-primary"
-          >
-            + Create User
+          <button @click="loadUsers" class="btn btn-ghost btn-sm">🔄 Reload</button>
+          <button v-if="isAdmin" @click="openCreateForm" class="btn btn-primary btn-sm">
+            + User Baru
           </button>
         </div>
       </div>
 
       <!-- Create/Edit User Form -->
-      <div v-if="showForm && isAdmin" class="mb-6 p-4 border border-dark-border rounded-xl bg-dark-bg">
-        <h3 class="font-bold mb-4">{{ editMode ? 'Edit User' : 'Create New User' }}</h3>
-        <form @submit.prevent="handleSubmit" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium mb-2">Nama *</label>
-            <input v-model="form.nama" type="text" class="input" required />
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-2">Username *</label>
-            <input v-model="form.username" type="text" class="input" required :disabled="editMode" />
-            <p v-if="editMode" class="text-xs text-dark-muted mt-1">Username cannot be changed</p>
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-2">Email *</label>
-            <input v-model="form.email" type="email" class="input" required />
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-2">Password {{ editMode ? '(leave empty to keep current)' : '*' }}</label>
-            <input v-model="form.password" type="password" class="input" :required="!editMode" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-2">Role *</label>
-            <select v-model="form.role" class="input" required>
-              <option value="admin">Admin</option>
-              <option value="security">Security</option>
-            </select>
-          </div>
-          <div class="flex items-end gap-2">
-            <button type="submit" class="btn btn-primary flex-1" :disabled="formLoading">
-              {{ formLoading ? 'Saving...' : (editMode ? 'Update' : 'Create') }}
-            </button>
-            <button type="button" @click="cancelForm" class="btn btn-ghost flex-1">
-              Cancel
-            </button>
-          </div>
-        </form>
-        <p v-if="formError" class="text-status-danger text-sm mt-2">{{ formError }}</p>
-        <p v-if="formSuccess" class="text-status-ok text-sm mt-2">{{ formSuccess }}</p>
-      </div>
+      <Transition name="slide">
+        <div v-if="showForm && isAdmin" class="mb-5 p-4 rounded-xl" style="background: var(--surface-bg); border: 1px solid var(--surface-border);">
+          <h3 class="font-bold text-sm mb-4" style="color: var(--surface-text);">{{ editMode ? 'Edit User' : 'Buat User Baru' }}</h3>
+          <form @submit.prevent="handleSubmit" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold mb-1 uppercase tracking-wider" style="color: var(--surface-muted);">Nama *</label>
+              <input v-model="form.nama" type="text" class="input" required />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1 uppercase tracking-wider" style="color: var(--surface-muted);">Username *</label>
+              <input v-model="form.username" type="text" class="input" required :disabled="editMode" />
+              <p v-if="editMode" class="text-[10px] mt-0.5" style="color: var(--surface-muted);">Username tidak bisa diubah</p>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1 uppercase tracking-wider" style="color: var(--surface-muted);">Email *</label>
+              <input v-model="form.email" type="email" class="input" required />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1 uppercase tracking-wider" style="color: var(--surface-muted);">No. HP</label>
+              <input v-model="form.no_hp" type="tel" class="input" placeholder="08xxxxxxxxxx" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1 uppercase tracking-wider" style="color: var(--surface-muted);">
+                Password {{ editMode ? '(kosongkan jika tidak diubah)' : '*' }}
+              </label>
+              <input v-model="form.password" type="password" class="input" :required="!editMode" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-1 uppercase tracking-wider" style="color: var(--surface-muted);">Role *</label>
+              <select v-model="form.role" class="input" required>
+                <option value="admin">Admin</option>
+                <option value="security">Security</option>
+              </select>
+            </div>
+            <div class="sm:col-span-2 flex gap-2">
+              <button type="submit" class="btn btn-primary flex-1" :disabled="formLoading">
+                {{ formLoading ? 'Menyimpan...' : (editMode ? 'Update' : 'Buat') }}
+              </button>
+              <button type="button" @click="cancelForm" class="btn btn-ghost flex-1">
+                Batal
+              </button>
+            </div>
+          </form>
+          <p v-if="formError" class="text-status-danger text-xs mt-2 bg-status-danger/10 rounded-lg p-2">{{ formError }}</p>
+          <p v-if="formSuccess" class="text-status-ok text-xs mt-2 bg-status-ok/10 rounded-lg p-2">{{ formSuccess }}</p>
+        </div>
+      </Transition>
 
       <!-- Users Table -->
-      <div class="overflow-x-auto border border-dark-border rounded-xl">
+      <div class="overflow-x-auto rounded-xl" style="border: 1px solid var(--surface-border);">
         <table class="table-auto">
-          <thead class="bg-dark-bg">
+          <thead style="background: var(--surface-bg);">
             <tr>
               <th>Nama</th>
               <th>Username</th>
               <th>Email</th>
               <th>Role</th>
               <th>Status</th>
-              <th>Created At</th>
-              <th v-if="isAdmin">Actions</th>
+              <th>Dibuat</th>
+              <th v-if="isAdmin">Aksi</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="loading">
-              <td :colspan="isAdmin ? 7 : 6" class="text-center py-8 text-dark-muted">
-                Loading...
+              <td :colspan="isAdmin ? 7 : 6" class="text-center py-8" style="color: var(--surface-muted);">
+                <span class="animate-pulse">Loading...</span>
               </td>
             </tr>
             <tr v-else-if="users.length === 0">
-              <td :colspan="isAdmin ? 7 : 6" class="text-center py-8 text-dark-muted">
+              <td :colspan="isAdmin ? 7 : 6" class="text-center py-8" style="color: var(--surface-muted);">
                 Tidak ada data
               </td>
             </tr>
             <tr v-else v-for="user in users" :key="user.id">
-              <td class="font-medium">{{ user.nama }}</td>
-              <td>{{ user.username }}</td>
-              <td>{{ user.email }}</td>
+              <td class="font-medium text-sm">{{ user.nama }}</td>
+              <td class="text-sm">{{ user.username }}</td>
+              <td class="text-sm">{{ user.email }}</td>
               <td>
-                <span :class="['badge border-0', user.role === 'admin' ? 'bg-brand-primary/20 text-brand-primary' : 'bg-dark-border text-dark-text']">
+                <span :class="['badge', user.role === 'admin' ? 'bg-brand-primary/15 text-brand-primary-light' : '']"
+                      :style="user.role !== 'admin' ? { background: 'var(--surface-border)', color: 'var(--surface-muted)' } : {}">
                   {{ user.role }}
                 </span>
               </td>
               <td>
-                <span :class="['badge border-0', user.status === 'online' ? 'bg-status-ok/20 text-status-ok' : 'bg-dark-border text-dark-muted']">
+                <span :class="['badge', user.status === 'online' ? 'bg-status-ok/15 text-status-ok' : '']"
+                      :style="user.status !== 'online' ? { background: 'var(--surface-border)', color: 'var(--surface-muted)' } : {}">
                   {{ user.status }}
                 </span>
               </td>
-              <td>{{ formatTime(user.created_at) }}</td>
+              <td class="text-xs" style="color: var(--surface-muted);">{{ formatTime(user.created_at) }}</td>
               <td v-if="isAdmin">
-                <div class="flex gap-2">
-                  <button 
-                    @click="openEditForm(user)" 
-                    class="btn btn-ghost text-xs py-1 px-3"
-                  >
-                    Edit
-                  </button>
+                <div class="flex gap-1.5">
+                  <button @click="openEditForm(user)" class="btn btn-ghost text-xs py-1 px-2.5">Edit</button>
                   <button 
                     @click="deleteUser(user.id)" 
-                    class="btn btn-danger text-xs py-1 px-3"
+                    class="btn btn-danger text-xs py-1 px-2.5"
                     :disabled="user.id === currentUserId"
                   >
-                    Delete
+                    Hapus
                   </button>
                 </div>
               </td>
@@ -149,6 +148,7 @@ const form = reactive({
   nama: '',
   username: '',
   email: '',
+  no_hp: '',
   password: '',
   role: 'security'
 })
@@ -183,6 +183,7 @@ function openEditForm(user) {
   form.nama = user.nama
   form.username = user.username
   form.email = user.email
+  form.no_hp = user.no_hp || ''
   form.password = ''
   form.role = user.role
   
@@ -201,6 +202,7 @@ function resetForm() {
   form.nama = ''
   form.username = ''
   form.email = ''
+  form.no_hp = ''
   form.password = ''
   form.role = 'security'
   formError.value = ''
@@ -216,24 +218,20 @@ async function handleSubmit() {
     const payload = {
       nama: form.nama,
       email: form.email,
+      no_hp: form.no_hp,
       role: form.role
     }
 
-    // Only include password if provided
-    if (form.password) {
-      payload.password = form.password
-    }
+    if (form.password) payload.password = form.password
 
     if (editMode.value) {
-      // Update existing user
       await api.put(`/users/${editingUserId.value}`, payload)
-      formSuccess.value = 'User updated successfully!'
+      formSuccess.value = 'User berhasil diupdate!'
     } else {
-      // Create new user
       payload.username = form.username
-      payload.password = form.password // required for create
+      payload.password = form.password
       await api.post('/users', payload)
-      formSuccess.value = 'User created successfully!'
+      formSuccess.value = 'User berhasil dibuat!'
     }
 
     setTimeout(() => {
@@ -252,17 +250,16 @@ async function handleSubmit() {
 
 async function deleteUser(userId) {
   if (userId === currentUserId.value) {
-    alert('Cannot delete your own account')
+    alert('Tidak bisa menghapus akun sendiri')
     return
   }
-
-  if (!confirm('Are you sure you want to delete this user?')) return
+  if (!confirm('Yakin ingin menghapus user ini?')) return
   
   try {
     await api.delete(`/users/${userId}`)
     await loadUsers()
   } catch (error) {
-    alert('Failed to delete user: ' + error.message)
+    alert('Gagal menghapus user: ' + error.message)
   }
 }
 
@@ -272,3 +269,8 @@ function formatTime(iso) {
 
 onMounted(loadUsers)
 </script>
+
+<style scoped>
+.slide-enter-active, .slide-leave-active { transition: all 0.3s ease; }
+.slide-enter-from, .slide-leave-to { opacity: 0; transform: translateY(-10px); }
+</style>
