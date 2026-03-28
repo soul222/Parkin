@@ -3,7 +3,7 @@ import protoLoader from "@grpc/proto-loader";
 import path from "path";
 import { fileURLToPath } from "url";
 import { makeVehicleService } from "./services/vehicleService.js";
-import { settingsService } from "./services/settingsService.js"; // kalau mau realtime settings update
+import { settingsService } from "./services/settingsService.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -33,8 +33,7 @@ server.bindAsync(
       console.error("Failed to start gRPC server:", error);
       return;
     }
-    console.log(`🚀 gRPC server running on ${port}`);
-    // ❌ server.start();  <-- HAPUS INI
+    console.log(`gRPC server running on ${port}`);
   }
 )
 }

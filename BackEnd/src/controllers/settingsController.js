@@ -25,7 +25,7 @@ export async function getSettings(req, res) {
 
     res.json({ data: settings });
   } catch (error) {
-    console.error("❌ Get settings error:", error);
+    console.error("Get settings error:", error);
     res.status(500).json({ message: "Failed to get settings" });
   }
 }
@@ -100,7 +100,7 @@ export async function updateSettings(req, res) {
       data: result,
     });
   } catch (error) {
-    console.error("❌ Update settings error:", error);
+    console.error("Update settings error:", error);
     res.status(500).json({ message: error.message || "Failed to update settings" });
   }
 }

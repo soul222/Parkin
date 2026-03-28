@@ -1,7 +1,9 @@
 <template>
   <div class="min-h-screen flex items-center justify-center p-6" style="background: var(--surface-bg);">
     <div class="text-center max-w-md">
-      <div class="text-6xl mb-4">📡</div>
+      <div class="text-6xl mb-4" style="color: var(--surface-muted);">
+        <font-awesome-icon :icon="['fas', 'wifi']" />
+      </div>
       <h1 class="text-2xl font-bold mb-2" style="color: var(--surface-text);">Anda Sedang Offline</h1>
       <p class="text-sm mb-6" style="color: var(--surface-muted);">
         Tidak ada koneksi internet. Beberapa data mungkin tidak tersedia.
@@ -9,7 +11,9 @@
       </p>
 
       <div class="card p-4 mb-4" v-if="hasCachedData">
-        <p class="text-xs font-semibold mb-2" style="color: var(--surface-muted);">📋 Data Terakhir (Cache)</p>
+        <p class="text-xs font-semibold mb-2" style="color: var(--surface-muted);">
+          <font-awesome-icon :icon="['fas', 'clipboard-list']" class="mr-1.5" /> Data Terakhir (Cache)
+        </p>
         <p class="text-sm" style="color: var(--surface-text);">
           Data dashboard terakhir masih tersedia dari cache. Kembali ke dashboard untuk melihat.
         </p>
@@ -20,7 +24,7 @@
           ← Kembali
         </button>
         <button @click="retry" class="btn btn-ghost">
-          🔄 Coba Lagi
+          <font-awesome-icon :icon="['fas', 'sync']" class="mr-1.5" /> Coba Lagi
         </button>
       </div>
     </div>

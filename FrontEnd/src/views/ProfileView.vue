@@ -19,7 +19,7 @@
           </div>
           <div>
             <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style="color: var(--surface-muted);">No. Handphone</label>
-            <input v-model="form.no_hp" type="tel" class="input" placeholder="08xxxxxxxxxx" />
+            <input v-model="form.no_hp" type="tel" class="input" placeholder="08xxxxxxxxxx" pattern="[0-9]*" @input="form.no_hp = form.no_hp.replace(/[^0-9]/g, '')" />
           </div>
         </div>
 

@@ -17,7 +17,7 @@
           class="p-2 rounded-xl transition-all"
           style="background: var(--surface-bg);"
         >
-          {{ themeStore.isDark ? '🌙' : '☀️' }}
+          <font-awesome-icon :icon="themeStore.isDark ?  ['fas', 'sun'] :  ['fas', 'moon']" />
         </button>
       </div>
 
@@ -58,7 +58,7 @@
         </div>
 
         <button type="submit" class="btn btn-primary w-full py-3.5 text-base" :disabled="loading">
-          <span v-if="loading" class="animate-spin">⏳</span>
+          <font-awesome-icon v-if="loading" :icon="['fas', 'spinner']" spin class="mr-1" />
           {{ loading ? 'Memproses...' : 'Masuk' }}
         </button>
 
@@ -100,7 +100,8 @@ async function handleLogin() {
   try {
     await authStore.login(form.value)
     await authStore.fetchProfile()
-    parkingStore.connectWebSocket(authStore.token)
+    // WebSocket terhubung via cookie — tidak perlu token di URL
+    parkingStore.connectWebSocket()
     router.push('/dashboard/home')
   } catch (err) {
     error.value = err.message

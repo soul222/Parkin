@@ -1,119 +1,78 @@
-// import { defineStore } from 'pinia'
-// import { ref, computed } from 'vue'
-// import { api } from '../utils/api'
+/**
+ * Auth Store (Pinia)
+ *
+ * Menggunakan HttpOnly cookie untuk token — tidak ada token di localStorage.
+ * Validasi sesi dilakukan via GET /api/users/profile (cookie dikirim otomatis).
+ */
+import { defineStore } from "pinia";
+import { ref, computed } from "vue";
+import { api } from "../utils/api";
 
-// export const useAuthStore = defineStore('auth', () => {
-//   const token = ref(localStorage.getItem('token') || '')
-//   const user = ref(null)
+export const useAuthStore = defineStore("auth", () => {
+  // Tidak ada token di state — token tersimpan di HttpOnly cookie (browser)
+  const user = ref(null);
 
-//   const isAuthenticated = computed(() => !!token.value)
-//   const isAdmin = computed(() => user.value?.role === 'admin')
+  const isAuthenticated = computed(() => !!user.value);
+  const isAdmin = computed(() => user.value?.role === "admin");
 
-//   async function login(credentials) {
-//     const res = await api.post('/auth/login', credentials)
-//     token.value = res.token
-//     user.value = res.user
-//     localStorage.setItem('token', res.token)
-//   }
-
-//   async function register(data) {
-//     await api.post('/auth/register', data)
-//   }
-
-//   async function logout() {
-//     await api.post('/auth/logout')
-//     token.value = ''
-//     user.value = null
-//     localStorage.removeItem('token')
-//   }
-
-//   async function fetchProfile() {
-//     const res = await api.get('/users/profile')
-//     user.value = res.data
-//   }
-
-//   return {
-//     token,
-//     user,
-//     isAuthenticated,
-//     isAdmin,
-//     login,
-//     register,
-//     logout,
-//     fetchProfile
-//   }
-// })
-
-
-import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import { api } from '../utils/api'
-
-export const useAuthStore = defineStore('auth', () => {
-  const token = ref(localStorage.getItem('token') || '')
-  const user = ref(null)
-
-  const isAuthenticated = computed(() => !!token.value)
-  const isAdmin = computed(() => user.value?.role === 'admin')
-
+  // LOGIN
   async function login(credentials) {
-    const res = await api.post('/auth/login', credentials)
-    token.value = res.token
-    user.value = res.user
-    localStorage.setItem('token', res.token)
+    const res = await api.post("/auth/login", credentials);
+    // Server set cookie secara otomatis — kita hanya simpan user data
+    user.value = res.user;
   }
 
+  // REGISTER
   async function register(data) {
-    const response = await fetch(`${import.meta.env.DEV ? 'http://localhost:3000' : ''}/api/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
-    })
-    
-    const result = await response.json()
-    
-    if (!response.ok) {
-      throw new Error(result.message || 'Registration failed')
-    }
-    
-    return result
+    const res = await api.post("/auth/register", data);
+    return res;
   }
 
+  // LOGOUT
   async function logout() {
     try {
-      await api.post('/auth/logout')
+      await api.post("/auth/logout");
     } catch (error) {
-      console.error('Logout error:', error)
+      console.error("Logout error:", error);
     } finally {
-      token.value = ''
-      user.value = null
-      localStorage.removeItem('token')
+      // Clear local state regardless — server clears cookie
+      user.value = null;
     }
   }
 
+  // FETCH PROFILE (juga update local user state)
+
   async function fetchProfile() {
-    const res = await api.get('/users/profile')
-    user.value = res.data
+    const res = await api.get("/users/profile");
+    user.value = res.data;
+    return res.data;
   }
 
-  // ✅ Validate token on app load
+
+  // VALIDATE TOKEN — called on route enter
+  // Uses cookie automatically via credentials: 'include'
   async function validateToken() {
-    if (!token.value) return false
-    
+    if (!isAuthenticated.value) {
+      // Try to restore session from cookie (e.g. after page refresh)
+      try {
+        await fetchProfile();
+        return true;
+      } catch {
+        user.value = null;
+        return false;
+      }
+    }
+
     try {
-      await fetchProfile()
-      return true
-    } catch (error) {
-      // Token invalid/expired
-      token.value = ''
-      user.value = null
-      localStorage.removeItem('token')
-      return false
+      await fetchProfile();
+      return true;
+    } catch {
+      user.value = null;
+      return false;
     }
   }
 
   return {
-    token,
     user,
     isAuthenticated,
     isAdmin,
@@ -121,6 +80,6 @@ export const useAuthStore = defineStore('auth', () => {
     register,
     logout,
     fetchProfile,
-    validateToken
-  }
-})
+    validateToken,
+  };
+});

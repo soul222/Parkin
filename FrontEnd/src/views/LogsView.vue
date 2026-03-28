@@ -21,7 +21,7 @@
           </select>
           
           <button @click="loadLogs" class="btn btn-ghost btn-sm">
-            🔄 Reload
+            <font-awesome-icon :icon="['fas', 'sync']" class="mr-1.5" /> Reload
           </button>
         </div>
       </div>
@@ -38,7 +38,7 @@
         </div>
         <div class="flex items-end gap-2">
           <button @click="applyDateFilter" class="btn btn-primary btn-sm">
-            🔍 Filter
+            <font-awesome-icon :icon="['fas', 'search']" class="mr-1.5" /> Filter
           </button>
           <button @click="clearDateFilter" class="btn btn-ghost btn-sm">
             ✕ Reset
@@ -48,7 +48,8 @@
             class="btn btn-secondary btn-sm"
             :disabled="exportLoading"
           >
-            {{ exportLoading ? '⏳' : '📥' }} Export CSV
+            <font-awesome-icon :icon="exportLoading ? ['fas', 'spinner'] : ['fas', 'file-arrow-down']" :spin="exportLoading" class="mr-1.5" />
+            Export CSV
           </button>
         </div>
       </div>
@@ -100,19 +101,11 @@
         </div>
         
         <div class="flex gap-2">
-          <button 
-            @click="prevPage" 
-            :disabled="pagination.page <= 1"
-            class="btn btn-ghost btn-sm"
-          >
-            ← Prev
+          <button @click="prevPage" :disabled="pagination.page <= 1" class="btn btn-ghost btn-sm">
+            <font-awesome-icon :icon="['fas', 'chevron-left']" class="mr-1" /> Prev
           </button>
-          <button 
-            @click="nextPage" 
-            :disabled="pagination.page >= pagination.totalPages"
-            class="btn btn-ghost btn-sm"
-          >
-            Next →
+          <button @click="nextPage" :disabled="pagination.page >= pagination.totalPages" class="btn btn-ghost btn-sm">
+            Next <font-awesome-icon :icon="['fas', 'chevron-right']" class="ml-1" />
           </button>
         </div>
       </div>

@@ -4,7 +4,7 @@ import {
   getLogs,
   addLog,
   deleteOldLogs,
-} from "../controllers/vehiclesController.js";
+} from "../controllers/vehicleController.js";
 import { authMiddleware, adminMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();

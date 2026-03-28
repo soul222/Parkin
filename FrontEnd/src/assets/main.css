@@ -4,9 +4,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ========================================
-   THEME VARIABLES
-   ======================================== */
+/* THEME VARIABLES */
 :root,
 .dark {
   --surface-bg: #0B1426;

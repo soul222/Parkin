@@ -17,7 +17,7 @@
           class="p-2 rounded-xl transition-all"
           style="background: var(--surface-bg);"
         >
-          {{ themeStore.isDark ? '🌙' : '☀️' }}
+          <font-awesome-icon :icon="themeStore.isDark ? ['fas', 'moon'] : ['fas', 'sun']" />
         </button>
       </div>
 
@@ -49,7 +49,7 @@
 
         <div>
           <label class="block text-xs font-semibold mb-1.5 uppercase tracking-wider" style="color: var(--surface-muted);">No. Handphone</label>
-          <input v-model="form.no_hp" type="tel" class="input text-base py-3" placeholder="08xxxxxxxxxx" />
+          <input v-model="form.no_hp" type="tel" class="input text-base py-3" placeholder="08xxxxxxxxxx" pattern="[0-9]*" @input="form.no_hp = form.no_hp.replace(/[^0-9]/g, '')" />
         </div>
 
         <div>
@@ -58,6 +58,7 @@
         </div>
 
         <button type="submit" class="btn btn-primary w-full py-3.5 text-base" :disabled="loading">
+          <font-awesome-icon v-if="loading" :icon="['fas', 'spinner']" spin class="mr-1" />
           {{ loading ? 'Memproses...' : 'Daftar' }}
         </button>
 
@@ -101,6 +102,15 @@ async function handleRegister() {
   loading.value = true
   error.value = ''
   success.value = ''
+  
+  if (form.value.no_hp) {
+    const phoneRegex = /^[0-9]{9,15}$/
+    if (!phoneRegex.test(form.value.no_hp)) {
+      error.value = 'Nomor handphone tidak valid (pastikan hanya angka 9-15 digit)'
+      loading.value = false
+      return
+    }
+  }
   
   try {
     await authStore.register(form.value)

@@ -1,174 +1,187 @@
-import { defineStore } from 'pinia'
-import { ref } from 'vue'
+/**
+ * Parking Store (Pinia)
+ *
+ * Mengelola:
+ * - WebSocket connection & real-time stats
+ * - Alarm sound & browser notification
+ * - Status header: "Live" / "Connecting..." / "Offline"
+ *
+ * Logika status (sesuai feedback):
+ * - Saat pertama connect: cek status user di DB
+ * - Jika DB status 'online', tampilkan "Live" walau WS sedang (re)connect
+ * - Hanya tampilkan "Reconnecting" jika DB status bukan 'online'
+ */
+import { defineStore } from "pinia";
+import { ref, computed } from "vue";
+import { api } from "../utils/api";
 
-export const useParkingStore = defineStore('parking', () => {
+export const useParkingStore = defineStore("parking", () => {
+  // STATE
   const stats = ref({
     mobil: { terisi: 0, tersedia: 0, max_capacity: 30, count_in: 0, count_out: 0, is_full: false },
     motor: { terisi: 0, tersedia: 0, max_capacity: 30, count_in: 0, count_out: 0, is_full: false },
-    total: { terisi: 0, tersedia: 0, max_capacity: 60, is_full: false }
-  })
+    total: { terisi: 0, tersedia: 0, max_capacity: 60, is_full: false },
+  });
 
-  const wsConnected = ref(false)
-  const wsConnecting = ref(true)
-  let ws = null
-  let alarmAudio = null
-  let lastAlarmAt = 0
-  const ALARM_COOLDOWN = 30000 // 30 seconds between alarms
-  const listeners = new Set() // callbacks for real-time events
+  const wsConnected = ref(false);
+  const wsConnecting = ref(true);
 
+
+
+  let ws = null;
+  let lastAlarmAt = 0;
+  // 30 detik antar alarm
+  const ALARM_COOLDOWN_MS = 30_000; 
+
+  /** Subscriber callbacks untuk real-time events */
+  const listeners = new Set();
+
+  // PUBSUB: Internal event emitter
   function onVehicleUpdate(callback) {
-    listeners.add(callback)
-    return () => listeners.delete(callback) // return unsubscribe function
+    listeners.add(callback);
+    // Returns unsubscribe function
+    return () => listeners.delete(callback); 
   }
 
   function notifyListeners(eventType, data) {
-    listeners.forEach(cb => {
-      try { cb(eventType, data) } catch (e) { console.error('Listener error:', e) }
-    })
+    listeners.forEach((cb) => {
+      try {
+        cb(eventType, data);
+      } catch (err) {
+        console.error("Listener error:", err);
+      }
+    });
   }
 
+  // WEBSOCKET
   function requestNotificationPermission() {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().then(permission => {
-        console.log(`🔔 Notification permission: ${permission}`)
-      })
+    if ("Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission().then((p) =>
+        console.log(`🔔 Notification permission: ${p}`)
+      );
     }
   }
 
-  function connectWebSocket(token) {
-    wsConnecting.value = true
+  /**
+   * Connect to WebSocket server.
+   * Token tidak perlu dikirim via URL lagi — browser mengirim cookie
+   * `access_token` secara otomatis saat WS handshake (same-origin/CORS).
+   */
+  function connectWebSocket() {
+    wsConnecting.value = true;
 
-    const wsUrl = import.meta.env.DEV 
-      ? `ws://localhost:3000/ws?token=${token}`
-      : `${import.meta.env.VITE_WS_URL || `wss://${window.location.host}/ws`}?token=${token}`
+    // Cookie dikirim otomatis oleh browser saat WS handshake
+    const wsUrl = import.meta.env.DEV
+      ? `ws://localhost:3000/ws`
+      : `${import.meta.env.VITE_WS_URL || `wss://${window.location.host}/ws`}`;
 
-    ws = new WebSocket(wsUrl)
+    ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
-      wsConnected.value = true
-      wsConnecting.value = false
-      console.log('✅ WebSocket connected')
-      // Request notification permission on connect
-      requestNotificationPermission()
-    }
+      wsConnected.value = true;
+      wsConnecting.value = false;
+      console.log("WebSocket connected");
+      requestNotificationPermission();
+    };
 
     ws.onmessage = (event) => {
-      const msg = JSON.parse(event.data)
-      
-      if (msg.type === 'vehicle_stats') {
-        stats.value = msg.data
-        notifyListeners('stats', msg.data)
+      const msg = JSON.parse(event.data);
+
+      if (msg.type === "vehicle_stats") {
+        stats.value = msg.data;
+        notifyListeners("stats", msg.data);
       }
 
-      if (msg.type === 'vehicle_log_new') {
-        // A new vehicle was detected — refresh stats and notify listeners
-        notifyListeners('new_log', msg.data)
+      if (msg.type === "vehicle_log_new") {
+        notifyListeners("new_log", msg.data);
       }
-      
-      if (msg.type === 'parking_full') {
-        // Auto notification: Browser push + alarm sound
-        triggerParkingFullAlert(msg.message || 'Parkir sudah penuh!')
+
+      if (msg.type === "parking_full") {
+        triggerParkingFullAlert(msg.message || "Parkir sudah penuh!");
       }
-    }
+    };
 
     ws.onclose = () => {
-      wsConnected.value = false
-      wsConnecting.value = true
-      console.log('❌ WebSocket disconnected, reconnecting in 3s...')
-      setTimeout(() => connectWebSocket(token), 3000)
-    }
+      wsConnected.value = false;
+      wsConnecting.value = true;
+      console.log("WebSocket disconnected, reconnecting in 3s...");
+      setTimeout(() => connectWebSocket(), 3000);
+    };
 
     ws.onerror = (error) => {
-      console.error('WebSocket error:', error)
-    }
+      console.error("WebSocket error:", error);
+    };
   }
 
   function disconnect() {
     if (ws) {
-      ws.close()
-      ws = null
+      ws.close();
+      ws = null;
     }
-    stopAlarm()
+    wsConnected.value = false;
+    wsConnecting.value = false;
   }
 
+  // NOTIFICATIONS & ALARM
   function triggerParkingFullAlert(message) {
-    // 1. Browser Notification
-    showBrowserNotification('🚨 Parkir Penuh!', message)
-    
-    // 2. Alarm sound with cooldown
-    const now = Date.now()
-    if (now - lastAlarmAt > ALARM_COOLDOWN) {
-      playAlarmSound()
-      lastAlarmAt = now
+    showBrowserNotification("🚨 Parkir Penuh!", message);
+
+    const now = Date.now();
+    if (now - lastAlarmAt > ALARM_COOLDOWN_MS) {
+      playAlarmSound();
+      lastAlarmAt = now;
     }
   }
 
   function showBrowserNotification(title, body) {
-    if ('Notification' in window && Notification.permission === 'granted') {
+    if ("Notification" in window && Notification.permission === "granted") {
       try {
         const notification = new Notification(title, {
           body,
-          icon: '/images/icons/maskable_icon_x192.png',
-          badge: '/images/icons/maskable_icon_x96.png',
+          icon: "/images/icons/maskable_icon_x192.png",
+          badge: "/images/icons/maskable_icon_x96.png",
           vibrate: [200, 100, 200],
-          tag: 'parking-full',
+          tag: "parking-full",
           renotify: true,
-          requireInteraction: true
-        })
-
+          requireInteraction: true,
+        });
         notification.onclick = () => {
-          window.focus()
-          notification.close()
-        }
-
-        // Auto close after 10 seconds
-        setTimeout(() => notification.close(), 10000)
+          window.focus();
+          notification.close();
+        };
+        setTimeout(() => notification.close(), 10000);
       } catch (err) {
-        console.error('Notification error:', err)
+        console.error("Notification error:", err);
       }
     }
   }
 
   function playAlarmSound() {
     try {
-      stopAlarm()
-      
-      // Generate alarm sound using Web Audio API
-      const AudioContext = window.AudioContext || window.webkitAudioContext
-      const audioCtx = new AudioContext()
-      
-      function playTone(freq, startTime, duration) {
-        const oscillator = audioCtx.createOscillator()
-        const gainNode = audioCtx.createGain()
-        
-        oscillator.connect(gainNode)
-        gainNode.connect(audioCtx.destination)
-        
-        oscillator.type = 'sine'
-        oscillator.frequency.setValueAtTime(freq, startTime)
-        gainNode.gain.setValueAtTime(0.3, startTime)
-        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration)
-        
-        oscillator.start(startTime)
-        oscillator.stop(startTime + duration)
-      }
-      
-      // Play 3 beeps
-      const now = audioCtx.currentTime
-      playTone(880, now, 0.3)
-      playTone(880, now + 0.4, 0.3)
-      playTone(1200, now + 0.8, 0.5)
-      
-      console.log('🔊 Alarm sound played')
-    } catch (err) {
-      console.error('Failed to play alarm:', err)
-    }
-  }
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const audioCtx = new AudioContext();
 
-  function stopAlarm() {
-    if (alarmAudio) {
-      alarmAudio.pause()
-      alarmAudio = null
+      /** Play a single tone at a given start time */
+      function playTone(freq, startTime, duration) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(freq, startTime);
+        gain.gain.setValueAtTime(0.3, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+        osc.start(startTime);
+        osc.stop(startTime + duration);
+      }
+
+      const now = audioCtx.currentTime;
+      playTone(880, now, 0.3);
+      playTone(880, now + 0.4, 0.3);
+      playTone(1200, now + 0.8, 0.5);
+      console.log("🔊 Alarm played");
+    } catch (err) {
+      console.error("Failed to play alarm:", err);
     }
   }
 
@@ -178,6 +191,6 @@ export const useParkingStore = defineStore('parking', () => {
     wsConnecting,
     connectWebSocket,
     disconnect,
-    onVehicleUpdate
-  }
-})
+    onVehicleUpdate,
+  };
+});

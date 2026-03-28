@@ -1,9 +1,6 @@
 import bcrypt from "bcryptjs";
 import { supabaseService } from "../config/supabase.js";
 
-// ============================================
-// GET ALL USERS
-// ============================================
 export async function getAllUsers(req, res) {
   try {
     const { data: users, error } = await supabaseService
@@ -15,14 +12,11 @@ export async function getAllUsers(req, res) {
 
     res.json({ data: users || [] });
   } catch (error) {
-    console.error("❌ Get users error:", error);
+    console.error("Get users error:", error);
     res.status(500).json({ message: "Failed to fetch users" });
   }
 }
 
-// ============================================
-// GET USER PROFILE (Own)
-// ============================================
 export async function getProfile(req, res) {
   try {
     const userId = req.user.id;
@@ -37,18 +31,22 @@ export async function getProfile(req, res) {
 
     res.json({ data: user });
   } catch (error) {
-    console.error("❌ Get profile error:", error);
+    console.error("Get profile error:", error);
     res.status(500).json({ message: "Failed to fetch profile" });
   }
 }
 
-// ============================================
-// UPDATE USER PROFILE (Own)
-// ============================================
 export async function updateProfile(req, res) {
   try {
     const userId = req.user.id;
-    const { nama, username, email, currentPassword, newPassword } = req.body;
+    const { nama, username, email, currentPassword, newPassword, no_hp } = req.body;
+
+    if (no_hp) {
+      const phoneRegex = /^[0-9]{9,15}$/;
+      if (!phoneRegex.test(no_hp)) {
+        return res.status(400).json({ message: "Format no handphone tidak valid (hanya angka 9-15 karakter)" });
+      }
+    }
 
     // Get current user data
     const { data: currentUser, error: fetchError } = await supabaseService
@@ -64,6 +62,7 @@ export async function updateProfile(req, res) {
       nama: nama || currentUser.nama,
       username: username || currentUser.username,
       email: email || currentUser.email,
+      no_hp: no_hp || currentUser.no_hp,
       updated_at: new Date().toISOString(),
     };
 
@@ -86,7 +85,7 @@ export async function updateProfile(req, res) {
       .from("users")
       .update(updates)
       .eq("id", userId)
-      .select("id, nama, username, email, role, status, created_at")
+      .select("id, nama, username, email, role, status, no_hp, created_at")
       .single();
 
     if (updateError) throw updateError;
@@ -96,17 +95,14 @@ export async function updateProfile(req, res) {
       data: updatedUser,
     });
   } catch (error) {
-    console.error("❌ Update profile error:", error);
+    console.error("Update profile error:", error);
     res.status(500).json({ message: error.message || "Failed to update profile" });
   }
 }
 
-// ============================================
-// CREATE USER (Admin only)
-// ============================================
+
 export async function createUser(req, res) {
   try {
-    // Check admin role
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Admin access required" });
     }
@@ -133,7 +129,6 @@ export async function createUser(req, res) {
       return res.status(409).json({ message: "Username or email already exists" });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user (uses service_role to bypass RLS)
@@ -157,17 +152,13 @@ export async function createUser(req, res) {
       data: newUser,
     });
   } catch (error) {
-    console.error("❌ Create user error:", error);
+    console.error("Create user error:", error);
     res.status(500).json({ message: error.message || "Failed to create user" });
   }
 }
 
-// ============================================
-// UPDATE USER (Admin only)
-// ============================================
 export async function updateUser(req, res) {
   try {
-    // Check admin role
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Admin access required" });
     }
@@ -175,7 +166,6 @@ export async function updateUser(req, res) {
     const { id } = req.params;
     const { nama, username, email, role, password } = req.body;
 
-    // Validate role if provided
     if (role && !["admin", "security"].includes(role)) {
       return res.status(400).json({ message: "Invalid role" });
     }
@@ -206,17 +196,13 @@ export async function updateUser(req, res) {
       data: updatedUser,
     });
   } catch (error) {
-    console.error("❌ Update user error:", error);
+    console.error("Update user error:", error);
     res.status(500).json({ message: error.message || "Failed to update user" });
   }
 }
 
-// ============================================
-// DELETE USER (Admin only)
-// ============================================
 export async function deleteUser(req, res) {
   try {
-    // Check admin role
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Admin access required" });
     }
@@ -237,7 +223,7 @@ export async function deleteUser(req, res) {
 
     res.json({ message: "User deleted successfully" });
   } catch (error) {
-    console.error("❌ Delete user error:", error);
+    console.error("Delete user error:", error);
     res.status(500).json({ message: "Failed to delete user" });
   }
 }

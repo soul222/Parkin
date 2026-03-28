@@ -3,7 +3,7 @@ import {
   subscribe,
   broadcastNotification,
   testNotification,
-} from "../controllers/notificationsController.js";
+} from "../controllers/notificationController.js";
 import { authMiddleware, adminMiddleware } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();

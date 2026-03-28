@@ -1,29 +1,41 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import router from './router'
-import App from './App.vue'
-import './assets/main.css'
-import { registerSW } from 'virtual:pwa-register'
-import { useThemeStore } from './stores/theme'
+import { createApp } from "vue";
+import { createPinia } from "pinia";
+import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import { registerSW } from "virtual:pwa-register";
 
+import router from "./router";
+import App from "./App.vue";
+
+// Import icon registry (registers all icons to FA library)
+import "./plugins/icons.js";
+
+// Global styles
+import "./assets/main.css";
+
+// PWA Service Worker registration
 const updateSW = registerSW({
   onNeedRefresh() {
-    if (confirm('New version available. Reload?')) {
-      updateSW(true)
+    if (confirm("Versi baru tersedia. Muat ulang sekarang?")) {
+      updateSW(true);
     }
   },
   onOfflineReady() {
-    console.log('App ready to work offline')
-  }
-})
+    console.log("✅ App siap digunakan secara offline");
+  },
+});
 
-const app = createApp(App)
-const pinia = createPinia()
-app.use(pinia)
-app.use(router)
+const app = createApp(App);
+const pinia = createPinia();
 
-// Initialize theme before mount
-const themeStore = useThemeStore()
-themeStore.init()
+app.use(pinia);
+app.use(router);
 
-app.mount('#app')
+// Register FontAwesome as global component
+app.component("font-awesome-icon", FontAwesomeIcon);
+
+// Initialize theme before mount (prevents flash of unstyled content)
+import { useThemeStore } from "./stores/theme";
+const themeStore = useThemeStore();
+themeStore.init();
+
+app.mount("#app");

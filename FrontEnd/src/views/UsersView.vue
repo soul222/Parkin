@@ -10,9 +10,11 @@
         </div>
         
         <div class="flex gap-2">
-          <button @click="loadUsers" class="btn btn-ghost btn-sm">🔄 Reload</button>
+          <button @click="loadUsers" class="btn btn-ghost btn-sm">
+            <font-awesome-icon :icon="['fas', 'sync']" class="mr-1.5" /> Reload
+          </button>
           <button v-if="isAdmin" @click="openCreateForm" class="btn btn-primary btn-sm">
-            + User Baru
+            <font-awesome-icon :icon="['fas', 'plus']" class="mr-1.5" /> User Baru
           </button>
         </div>
       </div>
@@ -110,13 +112,15 @@
               <td class="text-xs" style="color: var(--surface-muted);">{{ formatTime(user.created_at) }}</td>
               <td v-if="isAdmin">
                 <div class="flex gap-1.5">
-                  <button @click="openEditForm(user)" class="btn btn-ghost text-xs py-1 px-2.5">Edit</button>
+                  <button @click="openEditForm(user)" class="btn btn-ghost text-xs py-1 px-2.5">
+                    <font-awesome-icon :icon="['fas', 'pen']" class="mr-1" /> Edit
+                  </button>
                   <button 
                     @click="deleteUser(user.id)" 
                     class="btn btn-danger text-xs py-1 px-2.5"
                     :disabled="user.id === currentUserId"
                   >
-                    Hapus
+                    <font-awesome-icon :icon="['fas', 'trash']" class="mr-1" /> Hapus
                   </button>
                 </div>
               </td>

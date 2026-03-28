@@ -72,7 +72,7 @@ export const settingsService = {
   StreamSettingsUpdates: async (call) => {
     const watcherId = `watcher_${Date.now()}_${Math.random().toString(16).slice(2)}`;
     watchers.set(watcherId, call);
-    console.log(`⚙️ Settings watcher connected: ${watcherId}`);
+    console.log(`Settings watcher connected: ${watcherId}`);
 
     // kirim initial settings
     try {
@@ -93,7 +93,7 @@ export const settingsService = {
     const cleanup = () => {
       if (watchers.has(watcherId)) watchers.delete(watcherId);
       try { call.end(); } catch {}
-      console.log(`⚙️ Settings watcher disconnected: ${watcherId}`);
+      console.log(`Settings watcher disconnected: ${watcherId}`);
     };
 
     call.on("cancelled", cleanup);

@@ -24,7 +24,7 @@
           @click="handleInstall" 
           class="btn btn-primary btn-sm flex-shrink-0 py-2 px-4"
         >
-          📲 Install
+          <font-awesome-icon :icon="['fas', 'mobile-screen-button']" class="mr-1.5" /> Install
         </button>
 
         <!-- Dismiss -->
@@ -34,7 +34,7 @@
           style="color: var(--surface-muted);"
           aria-label="Tutup"
         >
-          ✕
+          <font-awesome-icon :icon="['fas', 'xmark']" />
         </button>
       </div>
     </div>
@@ -72,7 +72,7 @@ function handleBeforeInstallPrompt(e) {
 function handleAppInstalled() {
   showBanner.value = false
   deferredPrompt = null
-  console.log('✅ PARKIN installed successfully!')
+  console.log('PARKIN installed successfully!')
 }
 
 async function handleInstall() {
@@ -82,9 +82,9 @@ async function handleInstall() {
   const { outcome } = await deferredPrompt.userChoice
   
   if (outcome === 'accepted') {
-    console.log('✅ User accepted install')
+    console.log('User accepted install')
   } else {
-    console.log('❌ User dismissed install')
+    console.log('User dismissed install')
   }
   
   deferredPrompt = null

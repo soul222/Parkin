@@ -2,9 +2,7 @@ syntax = "proto3";
 
 package parking;
 
-// ============================================
 // Vehicle Detection Service
-// ============================================
 service VehicleService {
   // Streaming detections from YOLO to Server
   rpc StreamDetections(stream VehicleDetection) returns (DetectionResponse);
@@ -19,27 +17,21 @@ service VehicleService {
   rpc GetLogs(LogsRequest) returns (LogsResponse);
 }
 
-// ============================================
 // Settings Service
-// ============================================
 service SettingsService {
   rpc GetSettings(SettingsRequest) returns (Settings);
   rpc UpdateSettings(Settings) returns (SettingsResponse);
   rpc StreamSettingsUpdates(SettingsRequest) returns (stream Settings);
 }
 
-// ============================================
 // Authentication Service
-// ============================================
 service AuthService {
   rpc Login(LoginRequest) returns (AuthResponse);
   rpc Logout(LogoutRequest) returns (LogoutResponse);
   rpc ValidateToken(TokenRequest) returns (TokenValidation);
 }
 
-// ============================================
 // Messages
-// ============================================
 
 message VehicleDetection {
   string vehicle_type = 1;  // "mobil" or "motor"
@@ -76,7 +68,7 @@ message VehicleStats {
 }
 
 message VehicleTypeStats {
-  int32 terisi = 1;        // NEW
+  int32 terisi = 1; 
   int32 tersedia = 2;
   int32 max_capacity = 3;
   int32 count_in = 4;
@@ -85,7 +77,7 @@ message VehicleTypeStats {
 }
 
 message TotalStats {
-  int32 terisi = 1;        // NEW
+  int32 terisi = 1;  
   int32 tersedia = 2;
   int32 max_capacity = 3;
   bool is_full = 4;
@@ -98,8 +90,8 @@ message StatsRequest {
 message LogsRequest {
   int32 page = 1;
   int32 limit = 2;
-  string vehicle_type = 3;  // optional filter
-  string status = 4;         // optional filter
+  string vehicle_type = 3; 
+  string status = 4; 
   int64 start_date = 5;
   int64 end_date = 6;
 }

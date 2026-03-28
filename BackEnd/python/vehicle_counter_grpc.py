@@ -59,7 +59,7 @@ class VehicleCounterGRPC:
                 info = ydl.extract_info(youtube_url, download=False)
                 return info.get("url")
         except Exception as e:
-            print(f"❌ yt_dlp error: {e}")
+            print(f"yt_dlp error: {e}")
             return None
 
     def _open_capture(self):
@@ -104,16 +104,16 @@ class VehicleCounterGRPC:
     def run(self):
         cap = self._open_capture()
         if not cap.isOpened():
-            raise RuntimeError("❌ Failed to open video capture")
+            raise RuntimeError("Failed to open video capture")
 
-        print("✅ YOLO service running. Press 'q' to quit.")
+        print("YOLO service running. Press 'q' to quit.")
 
         # client-streaming generator
         def detections_generator():
             while True:
                 ok, frame = cap.read()
                 if not ok:
-                    print("⚠️ Stream buffering... retry in 2s")
+                    print("Stream buffering... retry in 2s")
                     time.sleep(2)
                     continue
 
@@ -166,9 +166,9 @@ class VehicleCounterGRPC:
         # kirim streaming ke server
         try:
             resp = self.vehicle_stub.StreamDetections(detections_generator())
-            print("✅ Stream ended. Server response:", resp.message)
+            print("Stream ended. Server response:", resp.message)
         except grpc.RpcError as e:
-            print("❌ gRPC error:", e.details())
+            print("gRPC error:", e.details())
 
         self.channel.close()
 

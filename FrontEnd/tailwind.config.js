@@ -26,7 +26,7 @@ export default {
         },
         brand: {
           primary: '#1565C0',
-          'primary-light': '#1E88E5',
+          'primary-light': '#1A56DB',
           'primary-dark': '#0D47A1',
           secondary: '#43A047',
           'secondary-light': '#66BB6A',

@@ -1,7 +1,7 @@
 const API_BASE = "http://localhost:3000";
 const WS_BASE = "ws://localhost:3000";
 
-// ⚠️ isi dari backend env VAPID_PUBLIC_KEY
+// env VAPID_PUBLIC_KEY
 const VAPID_PUBLIC_KEY = "PASTE_VAPID_PUBLIC_KEY_HERE";
 
 // ===== DOM =====
@@ -156,14 +156,15 @@ function connectWS() {
 
     ws.onopen = async () => {
       setBadge(true);
-      await loadStatsOnce(); // sync awal
+      // sync awal
+      await loadStatsOnce(); 
     };
 
     ws.onmessage = (evt) => {
       const msg = JSON.parse(evt.data);
 
       if (msg.type === "vehicle_stats") {
-        renderStats(msg.data); // ← WAJIB
+        renderStats(msg.data);
       }
 
       if (msg.type === "vehicle_log_new") {
@@ -201,10 +202,9 @@ function prependHomeLog(log) {
     <td>${fmtTime(log.created_at || new Date().toISOString())}</td>
   `;
 
-  // taruh di atas
   homeLogsBody.prepend(tr);
 
-  // batasi max 10 baris
+  // batas max 10 baris
   while (homeLogsBody.children.length > 10) {
     homeLogsBody.removeChild(homeLogsBody.lastChild);
   }
@@ -485,7 +485,7 @@ btnLogout.addEventListener("click", async () => {
 btnEnableNotif.addEventListener("click", async () => {
   try {
     const res = await subscribePush();
-    alert(res.ok ? "Notif aktif ✅" : `Gagal: ${res.reason}`);
+    alert(res.ok ? "Notif aktif" : `Gagal: ${res.reason}`);
   } catch (e) {
     alert("Gagal subscribe push: " + e.message);
   }
@@ -544,7 +544,7 @@ btnCreateUser.addEventListener("click", async () => {
     const json = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(json.message || "Create user failed");
 
-    userFormMsg.textContent = "Saved ✅";
+    userFormMsg.textContent = "Saved";
     uNama.value = "";
     uUsername.value = "";
     uEmail.value = "";
@@ -572,7 +572,7 @@ btnSaveProfile.addEventListener("click", async () => {
 
     const json = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(json.message || "Update profile failed");
-    profileMsg.textContent = "Saved ✅";
+    profileMsg.textContent = "Saved";
     await loadMe();
   } catch (e) {
     profileMsg.textContent = e.message;

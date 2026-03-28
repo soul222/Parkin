@@ -23,7 +23,7 @@ export async function pushParkingFullToAll(message) {
   if (!subs?.length) return;
 
   const payload = JSON.stringify({
-    title: "⚠️ Parkir Penuh",
+    title: "Parkir Penuh",
     body: message,
     url: "/home"
   });

@@ -3,15 +3,30 @@ import { supabaseService } from "../config/supabase.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-super-secret-jwt-key";
 
+
+// HELPER: Extract token from cookie or Bearer header
+// Prioritizes cookie, falls back to Authorization header
+// for backwards compat with gRPC/internal services.
+function extractToken(req) {
+  // 1. Prefer HttpOnly cookie (browser clients)
+  if (req.cookies?.access_token) {
+    return req.cookies.access_token;
+  }
+  // 2. Fallback: Authorization header (e.g. internal scripts, Postman)
+  const authHeader = req.headers.authorization;
+  if (authHeader?.startsWith("Bearer ")) {
+    return authHeader.substring(7);
+  }
+  return null;
+}
+
 export async function authMiddleware(req, res, next) {
   try {
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    const token = extractToken(req);
+
+    if (!token) {
       return res.status(401).json({ message: "No token provided" });
     }
-
-    const token = authHeader.substring(7);
 
     let decoded;
     try {
@@ -27,6 +42,7 @@ export async function authMiddleware(req, res, next) {
       .from("users")
       .select("id, nama, username, email, role, status")
       .eq("id", decoded.id)
+      .is("deleted_at", null)
       .single();
 
     if (error || !user) {
@@ -34,11 +50,9 @@ export async function authMiddleware(req, res, next) {
     }
 
     req.user = user;
-    req.token = token;
-
     next();
   } catch (error) {
-    console.error("❌ Auth middleware error:", error);
+    console.error("Auth middleware error:", error);
     res.status(500).json({ message: "Authentication failed" });
   }
 }
@@ -50,30 +64,25 @@ export function adminMiddleware(req, res, next) {
   next();
 }
 
+
+// OPTIONAL AUTH (allows both authenticated and guest)
 export async function optionalAuth(req, res, next) {
   try {
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return next();
-    }
+    const token = extractToken(req);
+    if (!token) return next();
 
-    const token = authHeader.substring(7);
     const decoded = jwt.verify(token, JWT_SECRET);
-
     const { data: user } = await supabaseService
       .from("users")
       .select("id, nama, username, email, role, status")
       .eq("id", decoded.id)
+      .is("deleted_at", null)
       .single();
 
-    if (user) {
-      req.user = user;
-      req.token = token;
-    }
-
+    if (user) req.user = user;
     next();
-  } catch (error) {
+  } catch {
+    // Invalid token, continue as guest
     next();
   }
 }

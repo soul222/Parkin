@@ -3,7 +3,7 @@
     <!-- Alert Status Banner -->
     <div :class="['alert-banner', alertBannerClass]">
       <div class="flex items-center justify-center gap-2">
-        <span class="text-2xl">{{ alertIcon }}</span>
+        <font-awesome-icon :icon="alertIcon" class="text-2xl" />
         <span>{{ alertMessage }}</span>
       </div>
     </div>
@@ -14,7 +14,7 @@
       <div class="stat-card">
         <div class="flex items-center justify-between mb-3">
           <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--surface-muted);">Mobil</span>
-          <span class="text-xl">🚗</span>
+          <font-awesome-icon :icon="['fas', 'car']" class="text-xl" style="color: #1E88E5;" />
         </div>
         <div class="text-3xl font-black" style="color: var(--surface-text);">
           {{ stats.mobil.terisi }}<span class="text-lg font-normal" style="color: var(--surface-muted);">/{{ stats.mobil.max_capacity }}</span>
@@ -36,7 +36,7 @@
       <div class="stat-card">
         <div class="flex items-center justify-between mb-3">
           <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--surface-muted);">Motor</span>
-          <span class="text-xl">🏍️</span>
+          <font-awesome-icon :icon="['fas', 'motorcycle']" class="text-xl" style="color: #43A047;" />
         </div>
         <div class="text-3xl font-black" style="color: var(--surface-text);">
           {{ stats.motor.terisi }}<span class="text-lg font-normal" style="color: var(--surface-muted);">/{{ stats.motor.max_capacity }}</span>
@@ -58,7 +58,7 @@
       <div class="stat-card">
         <div class="flex items-center justify-between mb-3">
           <span class="text-xs font-semibold uppercase tracking-wider" style="color: var(--surface-muted);">Total</span>
-          <span class="text-xl">📊</span>
+          <font-awesome-icon :icon="['fas', 'chart-line']" class="text-xl" style="color: #FFB300" />
         </div>
         <div class="text-3xl font-black" style="color: var(--surface-text);">
           {{ stats.total.terisi }}<span class="text-lg font-normal" style="color: var(--surface-muted);">/{{ stats.total.max_capacity }}</span>
@@ -84,7 +84,7 @@
           <p class="text-xs" style="color: var(--surface-muted);">Real-time vehicle count (30 log terakhir)</p>
         </div>
         <button @click="loadHistoricalData" class="btn btn-ghost btn-sm">
-          🔄 Reload
+          <font-awesome-icon :icon="['fas', 'sync']" class="mr-1.5" /> Reload
         </button>
       </div>
       <div class="relative" style="height: 280px;">
@@ -96,7 +96,9 @@
     <div class="card">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-lg font-bold" style="color: var(--surface-text);">Log Terbaru</h2>
-        <button @click="loadLogs" class="btn btn-ghost btn-sm">🔄</button>
+        <button @click="loadLogs" class="btn btn-ghost btn-sm">
+          <font-awesome-icon :icon="['fas', 'sync']" />
+        </button>
       </div>
 
       <div class="overflow-x-auto rounded-xl" style="border: 1px solid var(--surface-border);">
@@ -174,10 +176,9 @@ const alertBannerClass = computed(() => {
 })
 
 const alertIcon = computed(() => {
-  if (stats.value.total.is_full) return '🚨'
-  if (stats.value.mobil.is_full) return '⚠️'
-  if (stats.value.motor.is_full) return '⚠️'
-  return '✅'
+  if (stats.value.total.is_full) return ['fas', 'circle-xmark']
+  if (stats.value.mobil.is_full || stats.value.motor.is_full) return ['fas', 'exclamation']
+  return ['fas', 'circle-check']
 })
 
 const alertMessage = computed(() => {

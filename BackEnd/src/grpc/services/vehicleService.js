@@ -1,8 +1,8 @@
 import { supabaseService } from "../../config/supabase.js";
-import { getVehicleStats } from "../../services/statsService.js";
+import { getParkingStats } from "../../services/statsService.js";
 import { pushParkingFullToAll } from "../../services/pushService.js";
 
-// wsBroadcaster akan di-inject dari app.js (biar gampang)
+// wsBroadcaster akan di-inject dari app.js
 export function makeVehicleService(wsBroadcaster) {
   return {
     StreamDetections: (call, callback) => {
@@ -20,7 +20,7 @@ export function makeVehicleService(wsBroadcaster) {
           if (error) console.error("DB insert error:", error.message);
 
           // hitung stats terbaru
-          const stats = await getVehicleStats();
+          const stats = await getParkingStats();
 
           // Level 1: broadcast realtime ke dashboard (WS)
           wsBroadcaster.broadcast({
@@ -58,7 +58,7 @@ export function makeVehicleService(wsBroadcaster) {
       });
 
       call.on("end", async () => {
-        const stats = await getVehicleStats();
+        const stats = await getParkingStats();
         callback(null, {
           success: true,
           message: "Stream ended",

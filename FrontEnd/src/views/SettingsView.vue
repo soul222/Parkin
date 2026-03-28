@@ -12,7 +12,7 @@
         <!-- Parking Capacity -->
         <div class="space-y-3">
           <h3 class="font-bold text-sm flex items-center gap-2" style="color: var(--surface-text);">
-            🅿️ Kapasitas Parkir
+            <font-awesome-icon :icon="['fas', 'car']" /> Kapasitas Parkir
           </h3>
           
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -30,7 +30,7 @@
         <!-- Stream Configuration -->
         <div class="space-y-3 pt-4" style="border-top: 1px solid var(--surface-border);">
           <h3 class="font-bold text-sm flex items-center gap-2" style="color: var(--surface-text);">
-            📹 Stream Source
+            <font-awesome-icon :icon="['fas', 'sliders']" /> Stream Source
           </h3>
           
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -59,7 +59,7 @@
         <!-- Discord Notification -->
         <div class="space-y-3 pt-4" style="border-top: 1px solid var(--surface-border);">
           <h3 class="font-bold text-sm flex items-center gap-2" style="color: var(--surface-text);">
-            🔔 Notifikasi Discord
+            <font-awesome-icon :icon="['fas', 'bell']" /> Notifikasi Discord
           </h3>
           
           <div>
@@ -87,7 +87,8 @@
 
       <div class="mt-5 p-3 rounded-xl" style="background: var(--surface-bg); border: 1px solid var(--surface-border);">
         <p class="text-xs" style="color: var(--surface-muted);">
-          💡 <strong>Note:</strong> Setelah settings diubah, YOLO client akan otomatis reload stream jika menggunakan gRPC StreamSettingsUpdates.
+          <font-awesome-icon :icon="['fas', 'circle-info']" class="mr-1.5" />
+          <strong>Note:</strong> Setelah settings diubah, YOLO client akan otomatis reload stream jika menggunakan gRPC StreamSettingsUpdates.
         </p>
       </div>
     </div>
