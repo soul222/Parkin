@@ -1,0 +1,50 @@
+name: CI/CD Parkin AWS Deployment
+
+# Trigger deployment ketika ada PUSH ke branch 'main'
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🚚 Mengeksekusi SSH ke Server EC2 & Deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          # ==============================================================
+          # INSTRUKSIONAL RAHASIA REPOSITORI GITHUB (SECRETS)
+          # Server saat ini mati, jadi Anda wajib menyiapkan 3 variabel 
+          # ini di menu Settings > Secrets and Variable > Actions repositori Anda.
+          # 
+          # 1. SERVER_HOST      : Masukkan Elastic IP Anda (contoh: 54.254.x.x)
+          # 2. SERVER_USER      : Masukkan 'ubuntu' (default user OS EC2 Ubuntu)
+          # 3. SSH_PRIVATE_KEY  : Pasta (*copy-paste*) keseluruhan isi file 
+          #                       "parkin-key.pem" Anda dari "-----BEGIN RSA..." 
+          #                       sampai ujung.
+          # ==============================================================
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          
+          # Skrip Bash yang akan dijalankan langsung ke dalam EC2 instances Anda.
+          script: |
+            echo "🔥 Connect Successful! Updating App..."
+            # Asumsi repository di clone pada folder home ubuntu: /home/ubuntu/parkin-backend
+            cd /home/ubuntu/parkin-backend
+            
+            # Tarik kode terbaru dari repositori GitHub
+            git reset --hard origin/main
+            git pull origin main
+            
+            # Masuk ke direktori backend lalu perbarui Dependensi
+            cd BackEnd
+            npm install --production
+            
+            # Restart instance PM2 untuk memuat ulang logika backend dan websocket
+            pm2 restart parkin-api
+            pm2 save
+            
+            echo "🚀 Deployment Successfully Executed on AWS EC2!"

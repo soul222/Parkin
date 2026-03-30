@@ -1,0 +1,76 @@
+---
+import { useTranslations } from '../i18n/ui';
+
+export interface Props {
+  lang: 'en' | 'id';
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const faqs = [
+  { q: t('faq.1.q'), a: t('faq.1.a') },
+  { q: t('faq.2.q'), a: t('faq.2.a') },
+  { q: t('faq.3.q'), a: t('faq.3.a') }
+];
+
+const schemaJson = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": faqs.map(f => ({
+    "@type": "Question",
+    "name": f.q,
+    "acceptedAnswer": {
+      "@type": "Answer",
+      "text": f.a
+    }
+  }))
+});
+---
+
+<section id="faq" class="py-24 px-4 bg-surface-bg transition-colors duration-500">
+  <div class="max-w-3xl mx-auto scroll-reveal">
+    <div class="text-left md:text-center mb-16">
+      <h2 class="font-display text-3xl font-bold text-surface-text mb-4">{t('faq.title')}</h2>
+    </div>
+
+    <div class="space-y-2 border-t border-surface-border pt-6" id="faq-accordion">
+      {faqs.map((faq, index) => (
+        <div class="border-b border-surface-border transition-all faq-item pb-2 group">
+          <button class="w-full py-5 text-left flex justify-between items-center bg-transparent focus:outline-none faq-btn" aria-expanded="false" aria-controls={`faq-answer-${index}`}>
+            <span class="font-semibold text-surface-text text-lg pr-8 group-hover:text-brand-primary transition-colors">{faq.q}</span>
+             <i class="fa-solid fa-plus text-surface-muted transform transition-transform duration-300 chevron text-sm"></i>
+          </button>
+          <div id={`faq-answer-${index}`} class="pb-6 text-surface-muted hidden answer-content leading-relaxed pr-8">
+            {faq.a}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <script type="application/ld+json" set:html={schemaJson}></script>
+</section>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const faqBtns = document.querySelectorAll('.faq-btn');
+    faqBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const isExpanded = btn.getAttribute('aria-expanded') === 'true';
+        
+        document.querySelectorAll('.faq-btn').forEach(b => {
+          b.setAttribute('aria-expanded', 'false');
+          b.querySelector('.chevron')?.classList.remove('rotate-45');
+          b.nextElementSibling?.classList.add('hidden');
+        });
+
+        if (!isExpanded) {
+          btn.setAttribute('aria-expanded', 'true');
+          btn.querySelector('.chevron')?.classList.add('rotate-45'); // Turn + into X
+          btn.nextElementSibling?.classList.remove('hidden');
+        }
+      });
+    });
+  });
+</script>

@@ -1,0 +1,59 @@
+---
+import { useTranslations } from '../i18n/ui';
+
+export interface Props {
+  lang: 'en' | 'id';
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const steps = [
+  {
+    number: "01",
+    title: t('how.1.title'),
+    desc: t('how.1.desc'),
+  },
+  {
+    number: "02",
+    title: t('how.2.title'),
+    desc: t('how.2.desc'),
+  },
+  {
+    number: "03",
+    title: t('how.3.title'),
+    desc: t('how.3.desc'),
+  },
+  {
+    number: "04",
+    title: t('how.4.title'),
+    desc: t('how.4.desc'),
+  }
+];
+---
+
+<section id="cara-kerja" class="py-24 px-4 bg-surface-bg transition-colors duration-500">
+  <div class="max-w-7xl mx-auto scroll-reveal">
+    <div class="text-center max-w-2xl mx-auto mb-16">
+      <h2 class="font-display text-3xl sm:text-4xl font-bold text-surface-text mb-4">{t('how.title')}</h2>
+      <p class="text-surface-muted">{t('how.desc')}</p>
+    </div>
+
+    <div class="relative mt-20">
+      <!-- Horizontal Connecting Line -->
+      <div class="hidden md:block absolute top-[48px] left-[12%] right-[12%] h-px bg-brand-primary/20 z-0"></div>
+
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">
+        {steps.map((step) => (
+          <div class="flex flex-col items-center text-center group">
+            <div class="w-24 h-24 rounded-full bg-surface-card flex items-center justify-center mb-8 shadow-sm border border-brand-primary/10 transition-transform duration-300 group-hover:scale-105 group-hover:shadow-glow-blue bg-blend-soft-light">
+              <span class="font-display text-4xl font-black text-brand-primary tracking-tighter">{step.number}</span>
+            </div>
+            <h3 class="font-display font-semibold text-lg text-surface-text mb-3">{step.title}</h3>
+            <p class="text-surface-muted text-sm leading-relaxed max-w-[220px]">{step.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>

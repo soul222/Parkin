@@ -1,0 +1,155 @@
+---
+import { useTranslations } from '../i18n/ui';
+
+export interface Props {
+  lang: 'en' | 'id';
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const repoUrl = "https://github.com/Telconation/PARKIN";
+const demoUrl = "https://dashboard.parkin.my.id";
+
+// URIs
+const homeUrl = lang === 'en' ? '/en/' : '/';
+const otherLangUrl = lang === 'id' ? '/en/' : '/';
+const otherLangText = lang === 'id' ? 'EN' : 'ID';
+---
+
+<header class="fixed top-0 left-0 right-0 z-50 glass border-b border-surface-border transition-all" id="navbar">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      
+      <!-- Logo -->
+      <a href={homeUrl} class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-brand flex items-center justify-center shadow-glow-blue overflow-hidden p-[2px]">
+             <img src="/images/icons/maskable_icon_x96.png" alt="Logo Parkin" class="w-full h-full object-contain filter invert mix-blend-screen" />
+        </div>
+        <div>
+          <span class="font-display font-bold text-lg text-surface-text tracking-tight group-hover:text-brand-primary transition-colors">PARKIN</span>
+        </div>
+      </a>
+
+      <!-- Desktop Nav -->
+      <nav class="hidden md:flex items-center gap-8">
+        <a href="#fitur" class="text-sm font-medium text-surface-muted hover:text-surface-text transition-colors">{t('nav.fitur')}</a>
+        <a href="#cara-kerja" class="text-sm font-medium text-surface-muted hover:text-surface-text transition-colors">{t('nav.caraKerja')}</a>
+        <a href="#pricing" class="text-sm font-medium text-surface-muted hover:text-surface-text transition-colors">{t('nav.pricing')}</a>
+        <a href="#faq" class="text-sm font-medium text-surface-muted hover:text-surface-text transition-colors">{t('nav.faq')}</a>
+      </nav>
+
+      <!-- Desktop & Mobile Actions + Hamburger -->
+      <div class="flex items-center gap-4">
+
+        <!-- Theme Toggle -->
+        <button id="theme-toggle" aria-label="Toggle Dark Mode" class="text-surface-muted hover:text-surface-text focus:outline-none p-2 rounded-lg bg-surface-card border border-surface-border shadow-sm">
+          <i class="fa-solid fa-moon text-lg" id="theme-icon"></i>
+        </button>
+
+        <!-- Lang Toggle -->
+        <a href={otherLangUrl} aria-label="Toggle Language" class="text-surface-muted hover:text-surface-text font-bold text-xs p-2.5 rounded-lg bg-surface-card border border-surface-border shadow-sm">
+          {otherLangText}
+        </a>
+
+        <!-- Desktop Actions -->
+        <div class="hidden md:flex items-center gap-3">
+          <a href={repoUrl} target="_blank" rel="noopener noreferrer" aria-label="GitHub Repository" class="text-surface-muted hover:text-surface-text transition-colors px-2">
+            <i class="fa-brands fa-github text-xl"></i>
+          </a>
+          <a href={demoUrl} class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold rounded-lg text-white bg-brand-primary hover:bg-brand-primary-light border border-brand-primary-light/50 shadow-glow-blue transition-all">
+            {t('nav.demo')}
+          </a>
+        </div>
+        
+        <!-- Hamburger Button (Mobile Only) -->
+        <button id="mobile-menu-btn" aria-label="Toggle Menu" class="md:hidden text-surface-muted hover:text-surface-text focus:outline-none p-2 rounded-lg bg-surface-card border border-surface-border shadow-sm">
+          <i class="fa-solid fa-bars text-xl" id="menu-icon"></i>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Mobile Menu Dropdown -->
+  <div id="mobile-menu" class="hidden md:hidden bg-surface-bg/95 backdrop-blur-xl border-b border-surface-border absolute w-full left-0 top-16 shadow-2xl">
+    <div class="px-4 pt-4 pb-8 flex flex-col gap-4">
+      <a href="#fitur" class="mobile-link text-lg font-medium text-surface-muted hover:text-surface-text border-b border-surface-border/50 pb-2">{t('nav.fitur')}</a>
+      <a href="#cara-kerja" class="mobile-link text-lg font-medium text-surface-muted hover:text-surface-text border-b border-surface-border/50 pb-2">{t('nav.caraKerja')}</a>
+      <a href="#pricing" class="mobile-link text-lg font-medium text-surface-muted hover:text-surface-text border-b border-surface-border/50 pb-2">{t('nav.pricing')}</a>
+      <a href="#faq" class="mobile-link text-lg font-medium text-surface-muted hover:text-surface-text border-b border-surface-border/50 pb-2">{t('nav.faq')}</a>
+      
+      <div class="flex items-center gap-4 mt-2">
+         <a href={demoUrl} class="flex-1 text-center px-4 py-3 text-sm font-semibold rounded-lg text-white bg-brand-primary shadow-glow-blue">{t('nav.demoMobile')}</a>
+         <a href={repoUrl} target="_blank" class="px-4 py-3 rounded-lg bg-surface-card border border-surface-border text-surface-muted hover:text-surface-text flex items-center justify-center"><i class="fa-brands fa-github text-xl"></i></a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Mobile Menu Logic
+    const btn = document.getElementById('mobile-menu-btn');
+    const menu = document.getElementById('mobile-menu');
+    const icon = document.getElementById('menu-icon');
+    const links = document.querySelectorAll('.mobile-link');
+
+    if (btn && menu && icon) {
+      btn.addEventListener('click', () => {
+        const isHidden = menu.classList.contains('hidden');
+        if (isHidden) {
+          menu.classList.remove('hidden');
+          icon.classList.remove('fa-bars');
+          icon.classList.add('fa-xmark');
+        } else {
+          menu.classList.add('hidden');
+          icon.classList.remove('fa-xmark');
+          icon.classList.add('fa-bars');
+        }
+      });
+
+      links.forEach(link => {
+        link.addEventListener('click', () => {
+          menu.classList.add('hidden');
+          icon.classList.remove('fa-xmark');
+          icon.classList.add('fa-bars');
+        });
+      });
+    }
+
+    // Theme Toggle Logic
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    const html = document.documentElement;
+
+    function setTheme(isDark: boolean) {
+      if (isDark) {
+        html.classList.add('dark');
+        themeIcon?.classList.replace('fa-moon', 'fa-sun');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        html.classList.remove('dark');
+        themeIcon?.classList.replace('fa-sun', 'fa-moon');
+        localStorage.setItem('theme', 'light');
+      }
+    }
+
+    if (themeToggle) {
+      // Check stored preference or system preference
+      const storedTheme = localStorage.getItem('theme');
+      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      
+      if (storedTheme === 'dark' || (!storedTheme && systemDark)) {
+        setTheme(true);
+      } else {
+        setTheme(false); // Default to light if preferred or explicitly set
+      }
+
+      themeToggle.addEventListener('click', () => {
+        const isCurrentlyDark = html.classList.contains('dark');
+        setTheme(!isCurrentlyDark);
+      });
+    }
+  });
+</script>

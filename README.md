@@ -1,8 +1,8 @@
-# 🅿️ PARKIN (Smart Parking System)
+# ![Diagram Arsitektur API](docs/assets/icon.png) PARKIN (Smart Parking System)
 
-PARKIN adalah sistem cerdas manajemen lahan parkir yang dirancang untuk dapat di-scale ke level Enterprise dengan basis Arsitektur Terpisah (*Decoupled Architecture*). Aplikasi ini mampu melacak slot masuk dan keluar kendaraan secara *Real-Time*, memancarkan data melalui **WebSockets**, serta menerima tangkapan gambar dari sistem Kamera Eksternal menggunakan protokol berkecepatan tinggi **gRPC**.
+PARKIN adalah sistem cerdas manajemen lahan parkir yang dirancang untuk dapat di-scale ke level Enterprise dengan basis Arsitektur Terpisah (_Decoupled Architecture_). Aplikasi ini mampu melacak slot masuk dan keluar kendaraan secara _Real-Time_, memancarkan data melalui **WebSockets**, serta menerima tangkapan gambar dari sistem Kamera Eksternal menggunakan protokol berkecepatan tinggi **gRPC**.
 
-Proyek ini dibangun menggunakan filosofi **Secure by Design** (via JWT in HttpOnly Cookies) dan **High Maintainability** (Modular, Serverless-ready) sehingga sangat efisien dalam pengeluaran biaya cloud host. Kami mengundang *Developer* di seluruh penjuru dunia untuk berkontribusi (*Open Source*)! 🚀
+Proyek ini dibangun menggunakan filosofi **Secure by Design** (via JWT in HttpOnly Cookies) dan **High Maintainability** (Modular, Serverless-ready) sehingga sangat efisien dalam pengeluaran biaya cloud host. Kami mengundang _Developer_ di seluruh penjuru dunia untuk berkontribusi (_Open Source_)! 🚀
 
 ---
 
@@ -11,6 +11,7 @@ Proyek ini dibangun menggunakan filosofi **Secure by Design** (via JWT in HttpOn
 Proyek ini terbagi menjadi dua bagian utama: Arsitektur **FrontEnd** dan **BackEnd**.
 
 ### 🎨 FrontEnd (UI & PWA)
+
 - **Framework:** Vue.js 3 (Composition API) + Vite.
 - **State Management:** Pinia (Modular).
 - **Styling:** Tailwind CSS + Desain Glassmorphism/Neumorphism ringan.
@@ -18,10 +19,11 @@ Proyek ini terbagi menjadi dua bagian utama: Arsitektur **FrontEnd** dan **BackE
 - **Konektivitas:** Fetch API (Interceptors) & WebSocket Client Native.
 
 ### ⚙️ BackEnd (REST + Real-Time + gRPC)
+
 - **Runtime:** Node.js (ES Modules).
 - **Framework REST:** Express.js 5.
-- **Real-Time Engine:** `ws` (Node WebSocket Native) dengan manajemen koneksi aman di memori (Anti *Memory Leak*).
-- **Database:** Supabase (PostgreSQL managed cloud-SQL) dengan utilisasi `Supabase RPC` untuk performa *high-concurrency*.
+- **Real-Time Engine:** `ws` (Node WebSocket Native) dengan manajemen koneksi aman di memori (Anti _Memory Leak_).
+- **Database:** Supabase (PostgreSQL managed cloud-SQL) dengan utilisasi `Supabase RPC` untuk performa _high-concurrency_.
 - **Otentikasi:** JWT-based dengan rotasi token pada `HttpOnly Cookies`.
 - **Eksternal I/O:** `grpc-js` murni untuk menerima pesan/data berat dari Model Machine Learning/Kamera IoT berbahasa Python/C++.
 
@@ -59,14 +61,17 @@ Parkin/
 Bagi Anda yang ingin ikut membedah atau berkontribusi dalam pengembangan PARKIN, ikuti langkah-langkah instalasi berikut:
 
 ### Persyaratan Awal (Prerequisites)
+
 1. **Node.js** v18+ atau versi lebih baru.
 2. Manager paket `npm` atau `yarn`.
-3. Akun/Proyek **Supabase** (Versi free-tier *Database* sudah sangat cukup).
+3. Akun/Proyek **Supabase** (Versi free-tier _Database_ sudah sangat cukup).
 
 ### 1. Setup Database (Supabase)
-Karena perhitungan parkir menggunakan sistem terpadu (Supabase RPC - Remote Procedure Call), buat tabel `users`, `vehicle_logs`, `settings` di Supabase dan tempelkan fungsi SQL *Stats* bawaan (cek berkas migrasi jika ada, atau buat manual tabel minimal).
+
+Karena perhitungan parkir menggunakan sistem terpadu (Supabase RPC - Remote Procedure Call), buat tabel `users`, `vehicle_logs`, `settings` di Supabase dan tempelkan fungsi SQL _Stats_ bawaan (cek berkas migrasi jika ada, atau buat manual tabel minimal).
 
 ### 2. Setup BackEnd
+
 1. Masuk ke folder backend: `cd BackEnd`
 2. Install dependensi: `npm install`
 3. Gandakan file environtment contoh: `cp .env.example .env`
@@ -76,10 +81,11 @@ Karena perhitungan parkir menggunakan sistem terpadu (Supabase RPC - Remote Proc
 5. Jalankan server backend (termasuk WebSocket dan gRPC): `npm run dev`
 
 ### 3. Setup FrontEnd
+
 1. Masuk ke folder frontend: `cd FrontEnd`
 2. Install dependensi UI: `npm install`
 3. Konfigurasikan environtment lokal di file `.env` FrontEnd (misal `VITE_API_URL=http://localhost:3000/api`).
-4. Jalankan *Vite Dev Server*: `npm run dev`
+4. Jalankan _Vite Dev Server_: `npm run dev`
 5. Aplikasi klien akan menyala dalam mode HOT Reload (biasanya di `http://localhost:5173`).
 
 ---
@@ -87,21 +93,22 @@ Karena perhitungan parkir menggunakan sistem terpadu (Supabase RPC - Remote Proc
 ## 🔒 Postur Keamanan (Security Feature)
 
 Proyek ini telah disertifikasi ulang dan tidak mengizinkan _Bad Practices_. Jika Anda mengirim Pull Request (PR), perhatikan hal berikut:
-- **Jangan gunakan *LocalStorage*** untuk menyimpan Session JWT karena rawan XSS. *Gunakan selalu mekanisme Cookie HttpOnly bawaan dari server.*
-- **No N+1 Queries**: Saat mengambil data logs (`vehicle_logs`), gunakan `start` & `limit` langsung di Database *(Pagination)*, jangan me-*looping* dari javascript.
+
+- **Jangan gunakan _LocalStorage_** untuk menyimpan Session JWT karena rawan XSS. _Gunakan selalu mekanisme Cookie HttpOnly bawaan dari server._
+- **No N+1 Queries**: Saat mengambil data logs (`vehicle_logs`), gunakan `start` & `limit` langsung di Database _(Pagination)_, jangan me-_looping_ dari javascript.
 - Jangan menghapus perlindungan `helmet` dan `express-rate-limit` yang sudah ada di Backend API.
 
 ---
 
 ## 🤝 Mari Berkontribusi (Contributing Guide)
 
-Proyek ini menyambut siapapun untuk berpartisipasi dan menambahkan ekstensi fitur (misal: *Telegram Bot Webhook*, *Integrasi Payment Gateway Parkir*, dsb).
+Proyek ini menyambut siapapun untuk berpartisipasi dan menambahkan ekstensi fitur (misal: _Telegram Bot Webhook_, _Integrasi Payment Gateway Parkir_, dsb).
 
 1. Lakukan **Fork** pada repository ini.
 2. Buat _Branch_ fitur baru (`git checkout -b feature/FiturKerenAnda`).
-3. Lindungi kredibilitas *Clean Code*. Jauhkan kode *Controllers* dan komponen Vue dari duplikasi liar (*Dry Principle*).
+3. Lindungi kredibilitas _Clean Code_. Jauhkan kode _Controllers_ dan komponen Vue dari duplikasi liar (_Dry Principle_).
 4. **Commit** progres Anda (`git commit -m 'Menambahkan Fitur Keren'`).
 5. Lakukan **Push** untuk melempar pembaruan ke cabang (`git push origin feature/FiturKerenAnda`).
-6. Buka **Pull Request** ke *main branch* melalui laman *GitHub Repository*.
+6. Buka **Pull Request** ke _main branch_ melalui laman _GitHub Repository_.
 
-*Made with ❤️ for the Open Source Community.*
+_Made with ❤️ for the Open Source Community._
